@@ -10,6 +10,7 @@ Personal [JaKooLit Hyprland](https://github.com/JaKooLit/Ubuntu-Hyprland) config
 | `hypr/UserScripts/` | Custom scripts |
 | `hypr/Monitor_Profiles/` | Named monitor layouts (selectable via rofi) |
 | `hypr/workspaces.conf` | Workspace rules |
+| `waybar/` | Full waybar config (layouts, styles, modules) |
 | `machines/<hostname>/monitors.conf` | Per-machine monitor config |
 
 ## Apply to a new machine

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bootstrap: link this repo's configs into ~/.config/hypr
+# Bootstrap: link this repo's configs into ~/.config/hypr and ~/.config/waybar
 # Usage: ./setup.sh
 
 set -e
@@ -54,6 +54,10 @@ else
     echo "Run nwg-displays to configure monitors, then save it:"
     echo "  ./snapshot.sh"
 fi
+
+# Link waybar config
+WAYBAR_DST="$HOME/.config/waybar"
+backup_and_link "$DOTFILES_DIR/waybar" "$WAYBAR_DST"
 
 echo ""
 echo "Done. Reload Hyprland (SUPER + SHIFT + R) or re-login."

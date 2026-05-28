@@ -6,3 +6,6 @@ hypr/wallpaper_effects/
 
 # Local state
 hypr/UserConfigs/.initial_startup_done
+
+# Waybar: wallust colors are auto-generated per wallpaper
+waybar/wallust/
