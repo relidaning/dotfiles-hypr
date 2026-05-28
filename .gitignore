@@ -1,0 +1,8 @@
+# Backup files created by setup.sh
+*.bak
+
+# Wallpaper state (machine-specific)
+hypr/wallpaper_effects/
+
+# Local state
+hypr/UserConfigs/.initial_startup_done
