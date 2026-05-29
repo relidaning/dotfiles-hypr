@@ -74,6 +74,13 @@ backup_and_link "$DOTFILES_DIR/nwg-displays" "$HOME/.config/nwg-displays"
 backup_and_link "$DOTFILES_DIR/cava"         "$HOME/.config/cava"
 backup_and_link "$DOTFILES_DIR/quickshell"   "$HOME/.config/quickshell"
 
+# Terminal, shell, and theming
+backup_and_link "$DOTFILES_DIR/wallust"      "$HOME/.config/wallust"
+backup_and_link "$DOTFILES_DIR/kitty"        "$HOME/.config/kitty"
+backup_and_link "$DOTFILES_DIR/fish"         "$HOME/.config/fish"
+backup_and_link "$DOTFILES_DIR/fastfetch"    "$HOME/.config/fastfetch"
+backup_and_link "$DOTFILES_DIR/btop"         "$HOME/.config/btop"
+
 # goimapnotify
 IMAP_CONF_SRC="$DOTFILES_DIR/goimapnotify/config.json"
 IMAP_CONF_DST="$HOME/.config/imapnotify/imapnotify.json"
