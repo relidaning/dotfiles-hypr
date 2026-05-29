@@ -9,3 +9,6 @@ hypr/UserConfigs/.initial_startup_done
 
 # Waybar: wallust colors are auto-generated per wallpaper
 waybar/wallust/
+
+# goimapnotify: real credentials (copy from config.example.json and fill in)
+goimapnotify/config.json

@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "host": "imap.qq.com",
+      "port": 993,
+      "tls": true,
+      "tlsOptions": { "rejectUnauthorized": true },
+      "username": "123456789@qq.com",
+      "password": "qq-imap-authorization-code",
+      "onNewMail": "notify-send -i mail-unread 'New Mail (QQ)' 'New message in %s'",
+      "onNewMailPost": "",
+      "boxes": ["INBOX"]
+    },
+    {
+      "host": "imap.gmail.com",
+      "port": 993,
+      "tls": true,
+      "tlsOptions": { "rejectUnauthorized": true },
+      "username": "you@gmail.com",
+      "password": "gmail-app-password-16-chars",
+      "onNewMail": "notify-send -i mail-unread 'New Mail (Gmail)' 'New message in %s'",
+      "onNewMailPost": "",
+      "boxes": ["INBOX"]
+    }
+  ]
+}
