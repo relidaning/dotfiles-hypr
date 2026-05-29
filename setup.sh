@@ -59,5 +59,8 @@ fi
 WAYBAR_DST="$HOME/.config/waybar"
 backup_and_link "$DOTFILES_DIR/waybar" "$WAYBAR_DST"
 
+# Link rofi config
+backup_and_link "$DOTFILES_DIR/rofi" "$HOME/.config/rofi"
+
 echo ""
 echo "Done. Reload Hyprland (SUPER + SHIFT + R) or re-login."
