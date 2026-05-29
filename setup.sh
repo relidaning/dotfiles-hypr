@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bootstrap: link this repo's configs into ~/.config/hypr, ~/.config/waybar, ~/.config/rofi
+# Bootstrap: install missing environment, then link this repo's configs.
 # Usage: ./setup.sh
 
 set -e
@@ -7,6 +7,131 @@ set -e
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HYPR_DIR="$HOME/.config/hypr"
 MACHINE="$(hostname)"
+
+# ─── 0. Dependency check & install ───────────────────────────────────────────
+# Tools required by these dotfiles. Each entry is "command:arch-pkg:apt-pkg"
+# (use "-" to mark a package as AUR-only or unavailable in that PM).
+TOOLS=(
+    "hyprland:hyprland:hyprland"
+    "hypridle:hypridle:hypridle"
+    "hyprlock:hyprlock:hyprlock"
+    "waybar:waybar:waybar"
+    "rofi:rofi-wayland:rofi"
+    "kitty:kitty:kitty"
+    "fish:fish:fish"
+    "btop:btop:btop"
+    "fastfetch:fastfetch:fastfetch"
+    "cava:cava:cava"
+    "swappy:swappy:swappy"
+    "nwg-displays:nwg-displays:nwg-displays"
+    "swaync:swaync:swaync"
+    "wlogout:wlogout:wlogout"
+    "wallust:wallust:-"
+)
+
+# AUR-only packages (no pacman equivalent, need paru/yay)
+AUR_ONLY=(wallust goimapnotify)
+
+_detect_pm() {
+    if   command -v paru   &>/dev/null; then echo "paru"
+    elif command -v yay    &>/dev/null; then echo "yay"
+    elif command -v pacman &>/dev/null; then echo "pacman"
+    elif command -v apt    &>/dev/null; then echo "apt"
+    elif command -v dnf    &>/dev/null; then echo "dnf"
+    else echo "unknown"; fi
+}
+
+_is_aur_only() {
+    local cmd="$1"
+    for a in "${AUR_ONLY[@]}"; do [[ "$a" == "$cmd" ]] && return 0; done
+    return 1
+}
+
+missing_cmds=()
+for entry in "${TOOLS[@]}"; do
+    cmd="${entry%%:*}"
+    command -v "$cmd" &>/dev/null || missing_cmds+=("$entry")
+done
+
+if [[ ${#missing_cmds[@]} -gt 0 ]]; then
+    echo ""
+    echo "==> Missing tools: $(IFS=' '; for e in "${missing_cmds[@]}"; do printf '%s ' "${e%%:*}"; done)"
+    PM="$(_detect_pm)"
+
+    case "$PM" in
+        paru|yay)
+            pkgs=()
+            for entry in "${missing_cmds[@]}"; do
+                cmd="${entry%%:*}"; arch_pkg="${entry#*:}"; arch_pkg="${arch_pkg%%:*}"
+                [[ "$arch_pkg" != "-" ]] && pkgs+=("$arch_pkg")
+            done
+            [[ ${#pkgs[@]} -gt 0 ]] && "$PM" -S --noconfirm "${pkgs[@]}"
+            ;;
+
+        pacman)
+            pacman_pkgs=(); aur_pkgs=()
+            for entry in "${missing_cmds[@]}"; do
+                cmd="${entry%%:*}"; arch_pkg="${entry#*:}"; arch_pkg="${arch_pkg%%:*}"
+                [[ "$arch_pkg" == "-" ]] && continue
+                if _is_aur_only "$cmd"; then aur_pkgs+=("$arch_pkg")
+                else pacman_pkgs+=("$arch_pkg"); fi
+            done
+            [[ ${#pacman_pkgs[@]} -gt 0 ]] && sudo pacman -S --noconfirm "${pacman_pkgs[@]}"
+            if [[ ${#aur_pkgs[@]} -gt 0 ]]; then
+                echo "  WARNING: AUR packages needed (${aur_pkgs[*]}) — install paru or yay, then re-run."
+            fi
+            ;;
+
+        apt)
+            # On Ubuntu/Debian, hyprland + its stack is best installed via JaKooLit's script.
+            needs_jakoolit=false
+            for entry in "${missing_cmds[@]}"; do
+                [[ "${entry%%:*}" == "hyprland" ]] && needs_jakoolit=true && break
+            done
+
+            if $needs_jakoolit; then
+                echo ""
+                echo "  Hyprland is not installed. On Ubuntu/Debian the recommended way is"
+                echo "  JaKooLit's installer, which sets up the full Hyprland stack:"
+                echo "    https://github.com/JaKooLit/Ubuntu-Hyprland"
+                echo ""
+                read -r -p "  Run JaKooLit's installer now? [y/N] " yn
+                if [[ "$yn" =~ ^[Yy]$ ]]; then
+                    bash <(curl -s https://raw.githubusercontent.com/JaKooLit/Ubuntu-Hyprland/main/install.sh)
+                else
+                    echo "  Skipping installer. Re-run ./setup.sh after Hyprland is installed."
+                    exit 1
+                fi
+            else
+                sudo apt-get update -qq
+                for entry in "${missing_cmds[@]}"; do
+                    cmd="${entry%%:*}"; apt_pkg="${entry##*:}"
+                    if [[ "$apt_pkg" == "-" ]]; then
+                        echo "  WARNING: $cmd has no apt package — install it manually."
+                    else
+                        echo "  Installing $apt_pkg..."
+                        sudo apt-get install -y "$apt_pkg" || echo "  WARNING: $apt_pkg not found in apt."
+                    fi
+                done
+            fi
+            ;;
+
+        dnf)
+            for entry in "${missing_cmds[@]}"; do
+                cmd="${entry%%:*}"
+                echo "  Installing $cmd via dnf..."
+                sudo dnf install -y "$cmd" || echo "  WARNING: $cmd not found via dnf."
+            done
+            ;;
+
+        *)
+            echo "  ERROR: Unknown package manager. Install missing tools manually and re-run."
+            exit 1
+            ;;
+    esac
+    echo ""
+fi
+# ─────────────────────────────────────────────────────────────────────────────
 
 echo "==> Setting up Hyprland dotfiles for: $MACHINE"
 
