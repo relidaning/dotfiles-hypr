@@ -63,6 +63,17 @@ fi
 backup_and_link "$DOTFILES_DIR/waybar" "$HOME/.config/waybar"
 backup_and_link "$DOTFILES_DIR/rofi"   "$HOME/.config/rofi"
 
+# swaync
+backup_and_link "$DOTFILES_DIR/swaync"       "$HOME/.config/swaync"
+
+# Hyprland-adjacent tools
+backup_and_link "$DOTFILES_DIR/wlogout"      "$HOME/.config/wlogout"
+backup_and_link "$DOTFILES_DIR/ags"          "$HOME/.config/ags"
+backup_and_link "$DOTFILES_DIR/swappy"       "$HOME/.config/swappy"
+backup_and_link "$DOTFILES_DIR/nwg-displays" "$HOME/.config/nwg-displays"
+backup_and_link "$DOTFILES_DIR/cava"         "$HOME/.config/cava"
+backup_and_link "$DOTFILES_DIR/quickshell"   "$HOME/.config/quickshell"
+
 # goimapnotify
 IMAP_CONF_SRC="$DOTFILES_DIR/goimapnotify/config.json"
 IMAP_CONF_DST="$HOME/.config/imapnotify/imapnotify.json"
