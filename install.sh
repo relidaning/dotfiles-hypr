@@ -216,5 +216,55 @@ fi
 mkdir -p "$HOME/.config/imapnotify"
 backup_and_link "$IMAP_CONF_SRC" "$IMAP_CONF_DST"
 
+# ─── Proxy setup ─────────────────────────────────────────────────────────────
+PROXY_CONF="$DOTFILES_DIR/proxy/proxy.conf"
+if [[ -f "$PROXY_CONF" ]]; then
+    # shellcheck source=/dev/null
+    source "$PROXY_CONF"
+    if [[ -z "${PROXY_URL:-}" || "$PROXY_URL" == *"example.com"* ]]; then
+        echo ""
+        read -r -p "Set up a proxy? Enter URL (e.g. http://10.0.0.1:8080) or press Enter to skip: " proxy_input
+        if [[ -n "$proxy_input" ]]; then
+            sed -i "s|^PROXY_URL=.*|PROXY_URL=$proxy_input|" "$PROXY_CONF"
+            bash "$DOTFILES_DIR/hypr/UserScripts/Proxy.sh" on
+        fi
+    fi
+fi
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── Auto-start Hyprland on TTY1 ─────────────────────────────────────────────
+echo "==> Configuring Hyprland auto-start on TTY1..."
+
+HYPR_AUTOSTART=$'\n# Auto-start Hyprland on TTY1\nif [[ -z $DISPLAY && $(tty) == /dev/tty1 ]]; then\n    exec Hyprland\nfi'
+
+for profile in "$HOME/.zprofile" "$HOME/.bash_profile"; do
+    if grep -q "exec Hyprland" "$profile" 2>/dev/null; then
+        echo "  Already configured in $profile, skipping."
+    else
+        case "$profile" in
+            *zprofile)    [[ "$SHELL" == *zsh*  || -f "$profile" ]] || continue ;;
+            *bash_profile) [[ "$SHELL" == *bash* || -f "$profile" ]] || continue ;;
+        esac
+        printf '%s\n' "$HYPR_AUTOSTART" >> "$profile"
+        echo "  Added auto-start to $profile"
+    fi
+done
+
+OVERRIDE_FILE="/etc/systemd/system/getty@tty1.service.d/autologin.conf"
+if [[ -f "$OVERRIDE_FILE" ]]; then
+    echo "  TTY1 auto-login already configured, skipping."
+else
+    echo "  Configuring TTY1 auto-login for: $USER"
+    sudo mkdir -p "$(dirname "$OVERRIDE_FILE")"
+    sudo tee "$OVERRIDE_FILE" > /dev/null <<EOF
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin $USER --noclear %I \$TERM
+EOF
+    sudo systemctl daemon-reload
+    echo "  TTY1 auto-login configured."
+fi
+# ─────────────────────────────────────────────────────────────────────────────
+
 echo ""
 echo "Done. Reload Hyprland (SUPER + SHIFT + R) or re-login."
