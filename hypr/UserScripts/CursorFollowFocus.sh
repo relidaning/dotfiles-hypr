@@ -4,10 +4,22 @@
 
 SOCK="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
 
+last_addr=""
+
 nc -U "$SOCK" | while IFS= read -r line; do
     [[ "${line%%>>*}" != "activewindow" ]] && continue
 
+    # Skip when a layer shell (e.g. swaync) takes focus — payload class will be empty
+    payload="${line#*>>}"
+    [[ -z "${payload%%,*}" ]] && continue
+
     win=$(hyprctl activewindow -j 2>/dev/null) || continue
+
+    # Skip if the same window re-fires (e.g. cursor leaves window into waybar with follow_mouse=1)
+    addr=$(jq -r '.address' <<<"$win")
+    [[ "$addr" == "$last_addr" ]] && continue
+    last_addr="$addr"
+
     cur=$(hyprctl cursorpos -j 2>/dev/null) || continue
 
     result=$(jq -n \
